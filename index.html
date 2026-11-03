@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#10150f">
+  <meta name="description" content="Grow a little tree, gather leaves, and earn Prestige Points in The Random Tree.">
+  <title>The Random Tree — Prestige Points</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #10150f;
+      --panel: #192119;
+      --panel-light: #202b20;
+      --green: #b7f28b;
+      --green-dark: #587d43;
+      --cream: #f2f0df;
+      --muted: #9da997;
+      --line: #344333;
+      font-family: ui-rounded, "SF Pro Rounded", "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--cream);
+      background: radial-gradient(ellipse at 50% 34%, #273625 0, var(--bg) 62%);
+    }
+    button { font: inherit; }
+    .shell { width: min(1060px, calc(100% - 36px)); margin: 0 auto; padding: 28px 0 42px; }
+    header { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .brand { display: flex; align-items: center; gap: 11px; font-size: 15px; font-weight: 750; letter-spacing: .04em; }
+    .brand-icon { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 13px; background: var(--panel); font-size: 21px; }
+    .save-note { color: var(--muted); font-size: 12px; }
+    main { padding-top: 48px; }
+    .intro { text-align: center; margin-bottom: 27px; }
+    .eyebrow { color: var(--green); text-transform: uppercase; letter-spacing: .22em; font-size: 11px; font-weight: 800; }
+    h1 { margin: 10px 0 7px; font-size: clamp(35px, 6vw, 58px); letter-spacing: -.055em; line-height: 1; }
+    .intro p { color: var(--muted); margin: 12px 0 0; }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 760px; margin: 0 auto 18px; }
+    .stat, .card { border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(145deg, #1d271d, var(--panel)); }
+    .stat { padding: 16px 19px; }
+    .stat-label { color: var(--muted); font-size: 12px; }
+    .stat-value { display: block; margin-top: 5px; font-size: 25px; font-weight: 800; letter-spacing: -.04em; }
+    .stat-value small { color: var(--green); font-size: 13px; letter-spacing: 0; }
+    .game { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(260px, .7fr); gap: 16px; max-width: 920px; margin: auto; }
+    .grove { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 390px; padding: 27px; overflow: hidden; }
+    .grove::before { content: ""; position: absolute; width: 330px; height: 330px; border-radius: 50%; background: #8bd76b0d; filter: blur(2px); }
+    .grove-label { z-index: 1; color: var(--muted); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+    .tree-button { position: relative; z-index: 1; display: grid; place-items: center; width: 225px; height: 230px; padding: 0; border: 0; background: transparent; cursor: pointer; transition: transform .16s ease; }
+    .tree-button:hover { transform: translateY(-4px) scale(1.025); }
+    .tree-button:active { transform: scale(.96); }
+    .tree { font-size: 142px; filter: drop-shadow(0 13px 20px #0008); transition: font-size .3s ease; user-select: none; }
+    .tree-button:focus-visible, .action:focus-visible { outline: 3px solid var(--green); outline-offset: 4px; }
+    .tap-hint { z-index: 1; color: var(--muted); font-size: 13px; }
+    .float { position: absolute; z-index: 2; color: var(--green); font-size: 20px; font-weight: 900; pointer-events: none; animation: rise .75s ease-out forwards; }
+    @keyframes rise { to { opacity: 0; transform: translateY(-75px) scale(1.15); } }
+    .side { display: flex; flex-direction: column; gap: 16px; }
+    .card { padding: 21px; }
+    .card h2 { margin: 0; font-size: 17px; letter-spacing: -.02em; }
+    .card-copy { margin: 7px 0 17px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+    .action { width: 100%; padding: 12px 14px; border: 1px solid transparent; border-radius: 11px; color: #172012; background: var(--green); font-weight: 800; cursor: pointer; transition: filter .15s, transform .15s; }
+    .action:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); }
+    .action:disabled { color: #82907c; background: #2b3529; border-color: var(--line); cursor: not-allowed; }
+    .secondary { color: var(--cream); background: var(--panel-light); border-color: var(--line); }
+    .progress-track { height: 7px; margin: 15px 0 8px; overflow: hidden; border-radius: 99px; background: #10150f; }
+    .progress { width: 0; height: 100%; border-radius: inherit; background: var(--green); transition: width .25s ease; }
+    .progress-caption { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+    .divider { height: 1px; margin: 16px 0; background: var(--line); }
+    .upgrade-line { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 13px; }
+    .upgrade-line strong { font-size: 13px; }
+    .upgrade-line span { color: var(--muted); font-size: 12px; }
+    .small-action { width: auto; flex: 0 0 auto; padding: 9px 11px; font-size: 12px; }
+    footer { margin-top: 25px; color: #75816f; text-align: center; font-size: 12px; }
+    @media (max-width: 680px) {
+      .shell { width: min(100% - 24px, 520px); padding-top: 18px; }
+      main { padding-top: 37px; }
+      .stats { gap: 7px; }
+      .stat { padding: 13px 10px; }
+      .stat-value { font-size: 20px; }
+      .stat-label { font-size: 10px; }
+      .game { grid-template-columns: 1fr; }
+      .grove { min-height: 310px; }
+      .tree-button { height: 190px; }
+      .tree { font-size: 120px; }
+      .side { display: grid; grid-template-columns: 1fr; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; } }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <div class="brand"><span class="brand-icon" aria-hidden="true">🌱</span> THE RANDOM TREE</div>
+      <span class="save-note" id="save-note">Progress saves on this device</span>
+    </header>
+    <main>
+      <section class="intro" aria-labelledby="title">
+        <div class="eyebrow">A tiny incremental game</div>
+        <h1 id="title">Grow your own grove.</h1>
+        <p>Gather leaves, nurture your tree, and begin again for Prestige Points.</p>
+      </section>
+      <section class="stats" aria-label="Your resources">
+        <div class="stat"><span class="stat-label">🍃 Leaves</span><strong class="stat-value" id="leaves">0</strong></div>
+        <div class="stat"><span class="stat-label">✨ Prestige Points</span><strong class="stat-value" id="points">0</strong></div>
+        <div class="stat"><span class="stat-label">🌳 Leaves per click</span><strong class="stat-value" id="power">1</strong></div>
+      </section>
+      <section class="game" aria-label="Tree game">
+        <div class="grove card" id="grove">
+          <span class="grove-label" id="tree-stage">A new sapling</span>
+          <button class="tree-button" id="tap-tree" aria-label="Collect leaves from your tree">
+            <span class="tree" id="tree" aria-hidden="true">🌱</span>
+          </button>
+          <span class="tap-hint">Tap your tree to collect leaves</span>
+        </div>
+        <div class="side">
+          <section class="card" aria-labelledby="upgrade-title">
+            <h2 id="upgrade-title">A little sunshine</h2>
+            <p class="card-copy">Give your tree a boost. Each upgrade adds one leaf to every tap.</p>
+            <div class="upgrade-line"><div><strong>Leafy growth</strong><br><span id="upgrade-level">Level 0 · Cost: 25 leaves</span></div></div>
+            <button class="action secondary" id="buy-upgrade">🌤️&nbsp; Buy upgrade</button>
+          </section>
+          <section class="card" aria-labelledby="prestige-title">
+            <h2 id="prestige-title">A fresh beginning</h2>
+            <p class="card-copy">Trade your grove's growth for a permanent Prestige Point. Points stay with you when you restart.</p>
+            <div class="progress-track" role="progressbar" aria-label="Progress to next Prestige Point" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="progress"></div></div>
+            <div class="progress-caption"><span id="prestige-progress">0 / 100 leaves</span><span id="next-point">1 point</span></div>
+            <div class="divider"></div>
+            <button class="action" id="prestige" disabled>✨&nbsp; Prestige</button>
+          </section>
+        </div>
+      </section>
+    </main>
+    <footer>Your grove is saved locally in this browser. Come back and watch it grow.</footer>
+  </div>
+  <script>
+    (() => {
+      const STORAGE_KEY = 'the-random-tree-save-v1';
+      const freshSave = () => ({ leaves: 0, points: 0, upgrades: 0, lifetimeLeaves: 0 });
+      let state;
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        state = saved && Number.isFinite(saved.leaves) && Number.isFinite(saved.points)
+          ? { ...freshSave(), ...saved } : freshSave();
+      } catch { state = freshSave(); }
+
+      const $ = (id) => document.getElementById(id);
+      const pretty = (number) => Math.floor(number).toLocaleString();
+      const upgradeCost = () => Math.floor(25 * Math.pow(1.8, state.upgrades));
+      const requirement = () => 100 * (state.points + 1);
+      const stageFor = (leaves) => leaves >= 500 ? ['A mighty old tree', '🌳'] : leaves >= 100 ? ['A thriving tree', '🌲'] : leaves >= 25 ? ['A leafy sapling', '🌿'] : ['A new sapling', '🌱'];
+
+      function render() {
+        $('leaves').textContent = pretty(state.leaves);
+        $('points').textContent = pretty(state.points);
+        $('power').textContent = pretty(1 + state.upgrades + state.points);
+        $('upgrade-level').textContent = `Level ${state.upgrades} · Cost: ${pretty(upgradeCost())} leaves`;
+        $('buy-upgrade').disabled = state.leaves < upgradeCost();
+        const need = requirement();
+        const percent = Math.min(100, (state.leaves / need) * 100);
+        $('progress').style.width = `${percent}%`;
+        $('progress').parentElement.setAttribute('aria-valuenow', String(Math.floor(percent)));
+        $('prestige-progress').textContent = `${pretty(state.leaves)} / ${pretty(need)} leaves`;
+        $('next-point').textContent = `${state.points + 1} ${state.points === 0 ? 'point' : 'points'}`;
+        $('prestige').disabled = state.leaves < need;
+        const [stage, emoji] = stageFor(state.leaves);
+        $('tree-stage').textContent = stage;
+        $('tree').textContent = emoji;
+        $('tree').style.fontSize = state.leaves >= 500 ? '158px' : '142px';
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch { $('save-note').textContent = 'Local saving unavailable'; }
+      }
+
+      $('tap-tree').addEventListener('click', (event) => {
+        const gain = 1 + state.upgrades + state.points;
+        state.leaves += gain;
+        state.lifetimeLeaves += gain;
+        const bounds = $('grove').getBoundingClientRect();
+        const floating = document.createElement('span');
+        floating.className = 'float';
+        floating.textContent = `+${gain} 🍃`;
+        floating.style.left = `${event.clientX ? event.clientX - bounds.left : bounds.width / 2}px`;
+        floating.style.top = `${event.clientY ? event.clientY - bounds.top : bounds.height / 2}px`;
+        $('grove').append(floating);
+        floating.addEventListener('animationend', () => floating.remove(), { once: true });
+        render();
+      });
+      $('buy-upgrade').addEventListener('click', () => {
+        const cost = upgradeCost();
+        if (state.leaves < cost) return;
+        state.leaves -= cost;
+        state.upgrades += 1;
+        render();
+      });
+      $('prestige').addEventListener('click', () => {
+        const earned = state.points + 1;
+        if (state.leaves < requirement()) return;
+        state.points += earned;
+        state.leaves = 0;
+        state.upgrades = 0;
+        render();
+      });
+      render();
+    })();
+  </script>
+</body>
+</html>
