@@ -148,7 +148,7 @@
       const pretty = (number) => Math.floor(number).toLocaleString();
       const upgradeCost = () => Math.floor(25 * Math.pow(1.8, state.upgrades));
       const requirement = () => 100 * (state.points + 1);
-      const stageFor = (leaves) => leaves >= 500 ? ['A mighty old tree', '🌳'] : leaves >= 100 ? ['A thriving tree', '🌲'] : leaves >= 25 ? ['A leafy sapling', '🌿'] : ['A new sapling', '🌱'];
+      const stageFor = (leaves) => leaves >= 10000 ? ['The Death tree', ' 🪦'] : leaves >= 500 ? ['A mighty old tree', '🌳'] : leaves >= 100 ? ['A thriving tree', '🌲'] : leaves >= 25 ? ['A leafy sapling', '🌿'] : ['A new sapling', '🌱'];
 
       function render() {
         $('leaves').textContent = pretty(state.leaves);
