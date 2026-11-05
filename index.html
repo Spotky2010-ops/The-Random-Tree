@@ -140,7 +140,7 @@
           </section>
           <section class="card" aria-labelledby="tier-title">
             <h2 id="tier-title">A new tier</h2>
-            <p class="card-copy">Reach Rank 10, then reset your grove, Prestige Points, upgrades, and Ranks for a permanent 1.025x bonus to every tap.</p>
+            <p class="card-copy">Reach Rank 10, then reset your grove, Prestige Points, upgrades, and Ranks for a permanent 1.125x bonus to every tap.</p>
             <div class="progress-track" role="progressbar" aria-label="Progress to next Tier" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="tier-progress"></div></div>
             <div class="progress-caption"><span id="tier-progress-label">0 / 10 Ranks</span><span id="tier-bonus">x1.000</span></div>
             <div class="divider"></div>
@@ -167,7 +167,7 @@
       const upgradeCost = () => Math.floor(25 * Math.pow(1.8, state.upgrades));
       const requirement = () => 100 * (state.points + 1);
       const rankRequirement = () => 10 * (state.ranks + 1);
-      const tierMultiplier = () => Math.pow(1.025, state.tiers);
+      const tierMultiplier = () => Math.pow(1.125, state.tiers);
       const stageFor = (leaves) => leaves >= 10000 ? ['The Death tree', ' 🪦'] : leaves >= 500 ? ['A mighty old tree', '🌳'] : leaves >= 100 ? ['A thriving tree', '🌲'] : leaves >= 25 ? ['A leafy sapling', '🌿'] : ['A new sapling', '🌱'];
 
       function render() {
