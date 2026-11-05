@@ -37,7 +37,7 @@
     .eyebrow { color: var(--green); text-transform: uppercase; letter-spacing: .22em; font-size: 11px; font-weight: 800; }
     h1 { margin: 10px 0 7px; font-size: clamp(35px, 6vw, 58px); letter-spacing: -.055em; line-height: 1; }
     .intro p { color: var(--muted); margin: 12px 0 0; }
-    .stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; max-width: 920px; margin: 0 auto 18px; }
+    .stats { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; max-width: 920px; margin: 0 auto 18px; }
     .stat, .card { border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(145deg, #1d271d, var(--panel)); }
     .stat { padding: 16px 19px; }
     .stat-label { color: var(--muted); font-size: 12px; }
@@ -106,6 +106,7 @@
         <div class="stat"><span class="stat-label">🌟 Rank</span><strong class="stat-value" id="rank">0</strong></div>
         <div class="stat"><span class="stat-label">🌲 Tiers</span><strong class="stat-value" id="tiers">0</strong></div>
         <div class="stat"><span class="stat-label">🌌 Ascensions</span><strong class="stat-value" id="ascensions">0</strong></div>
+        <div class="stat"><span class="stat-label">🔷 Pents</span><strong class="stat-value" id="pents">0</strong></div>
         <div class="stat"><span class="stat-label">🌳 Leaves per click</span><strong class="stat-value" id="power">1</strong></div>
       </section>
       <section class="game" aria-label="Tree game">
@@ -155,6 +156,14 @@
             <div class="divider"></div>
             <button class="action" id="ascension-reset" disabled>🌌&nbsp; Ascend</button>
           </section>
+          <section class="card" aria-labelledby="pent-title">
+            <h2 id="pent-title">A greater cycle</h2>
+            <p class="card-copy">Reach 10 Ascensions to Pent. Each Pent resets your lower progress and grants a permanent 10x tap bonus. After your first Pent, Prestige Points are claimed automatically.</p>
+            <div class="progress-track" role="progressbar" aria-label="Progress to next Pent" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="pent-progress"></div></div>
+            <div class="progress-caption"><span id="pent-progress-label">0 / 10 Ascensions</span><span id="pent-bonus">x1.000</span></div>
+            <div class="divider"></div>
+            <button class="action" id="pent-reset" disabled>🔷&nbsp; Pent reset</button>
+          </section>
         </div>
       </section>
     </main>
@@ -163,7 +172,7 @@
   <script>
     (() => {
       const STORAGE_KEY = 'the-random-tree-save-v1';
-      const freshSave = () => ({ leaves: 0, points: 0, ranks: 0, tiers: 0, ascensions: 0, upgrades: 0, lifetimeLeaves: 0 });
+      const freshSave = () => ({ leaves: 0, points: 0, ranks: 0, tiers: 0, ascensions: 0, pents: 0, upgrades: 0, lifetimeLeaves: 0 });
       let state;
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -178,7 +187,8 @@
       const rankRequirement = () => 10 * (state.ranks + 1);
       const tierMultiplier = () => Math.pow(1.125, state.tiers);
       const ascensionMultiplier = () => Math.pow(2.5, state.ascensions);
-      const tapMultiplier = () => tierMultiplier() * ascensionMultiplier();
+      const pentMultiplier = () => Math.pow(10, state.pents);
+      const tapMultiplier = () => tierMultiplier() * ascensionMultiplier() * pentMultiplier();
       const stageFor = (leaves) => leaves >= 10000 ? ['The Death tree', ' 🪦'] : leaves >= 500 ? ['A mighty old tree', '🌳'] : leaves >= 100 ? ['A thriving tree', '🌲'] : leaves >= 25 ? ['A leafy sapling', '🌿'] : ['A new sapling', '🌱'];
 
       function render() {
@@ -187,6 +197,7 @@
         $('rank').textContent = pretty(state.ranks);
         $('tiers').textContent = pretty(state.tiers);
         $('ascensions').textContent = pretty(state.ascensions);
+        $('pents').textContent = pretty(state.pents);
         $('power').textContent = Number(((1 + state.upgrades + state.points + state.ranks) * tapMultiplier()).toFixed(3)).toString();
         $('upgrade-level').textContent = `Level ${state.upgrades} · Cost: ${pretty(upgradeCost())} leaves`;
         $('buy-upgrade').disabled = state.leaves < upgradeCost();
@@ -216,6 +227,12 @@
         $('ascension-progress-label').textContent = `${pretty(state.tiers)} / 10 Tiers`;
         $('ascension-bonus').textContent = `x${ascensionMultiplier().toFixed(3)}`;
         $('ascension-reset').disabled = state.tiers < 10;
+        const pentPercent = Math.min(100, (state.ascensions / 10) * 100);
+        $('pent-progress').style.width = `${pentPercent}%`;
+        $('pent-progress').parentElement.setAttribute('aria-valuenow', String(Math.floor(pentPercent)));
+        $('pent-progress-label').textContent = `${pretty(state.ascensions)} / 10 Ascensions`;
+        $('pent-bonus').textContent = `x${pentMultiplier().toFixed(3)}`;
+        $('pent-reset').disabled = state.ascensions < 10;
 
         const [stage, emoji] = stageFor(state.leaves);
         $('tree-stage').textContent = stage;
@@ -236,6 +253,11 @@
         floating.style.top = `${event.clientY ? event.clientY - bounds.top : bounds.height / 2}px`;
         $('grove').append(floating);
         floating.addEventListener('animationend', () => floating.remove(), { once: true });
+        if (state.pents > 0 && state.leaves >= requirement()) {
+          state.points += state.points + 1;
+          state.leaves = 0;
+          state.upgrades = 0;
+        }
         render();
       });
       $('buy-upgrade').addEventListener('click', () => {
@@ -273,6 +295,17 @@
       $('ascension-reset').addEventListener('click', () => {
         if (state.tiers < 10) return;
         state.ascensions += 1;
+        state.tiers = 0;
+        state.ranks = 0;
+        state.points = 0;
+        state.leaves = 0;
+        state.upgrades = 0;
+        render();
+      });
+      $('pent-reset').addEventListener('click', () => {
+        if (state.ascensions < 10) return;
+        state.pents += 1;
+        state.ascensions = 0;
         state.tiers = 0;
         state.ranks = 0;
         state.points = 0;
