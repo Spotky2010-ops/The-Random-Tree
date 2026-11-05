@@ -37,7 +37,7 @@
     .eyebrow { color: var(--green); text-transform: uppercase; letter-spacing: .22em; font-size: 11px; font-weight: 800; }
     h1 { margin: 10px 0 7px; font-size: clamp(35px, 6vw, 58px); letter-spacing: -.055em; line-height: 1; }
     .intro p { color: var(--muted); margin: 12px 0 0; }
-    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; max-width: 920px; margin: 0 auto 18px; }
+    .stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; max-width: 920px; margin: 0 auto 18px; }
     .stat, .card { border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(145deg, #1d271d, var(--panel)); }
     .stat { padding: 16px 19px; }
     .stat-label { color: var(--muted); font-size: 12px; }
@@ -104,6 +104,7 @@
         <div class="stat"><span class="stat-label">🍃 Leaves</span><strong class="stat-value" id="leaves">0</strong></div>
         <div class="stat"><span class="stat-label">✨ Prestige Points</span><strong class="stat-value" id="points">0</strong></div>
         <div class="stat"><span class="stat-label">🌟 Rank</span><strong class="stat-value" id="rank">0</strong></div>
+        <div class="stat"><span class="stat-label">🌲 Tiers</span><strong class="stat-value" id="tiers">0</strong></div>
         <div class="stat"><span class="stat-label">🌳 Leaves per click</span><strong class="stat-value" id="power">1</strong></div>
       </section>
       <section class="game" aria-label="Tree game">
@@ -128,6 +129,7 @@
             <div class="progress-caption"><span id="prestige-progress">0 / 100 leaves</span><span id="next-point">1 point</span></div>
             <div class="divider"></div>
             <button class="action" id="prestige" disabled>✨&nbsp; Prestige</button>
+          </section>
           <section class="card" aria-labelledby="rank-title">
             <h2 id="rank-title">A higher calling</h2>
             <p class="card-copy">Reset your grove and Prestige Points to earn a permanent Rank. Each Rank adds one leaf to every tap.</p>
@@ -136,7 +138,13 @@
             <div class="divider"></div>
             <button class="action" id="rank-reset" disabled>🌟&nbsp; Rank up</button>
           </section>
-
+          <section class="card" aria-labelledby="tier-title">
+            <h2 id="tier-title">A new tier</h2>
+            <p class="card-copy">Reach Rank 10, then reset your grove, Prestige Points, upgrades, and Ranks for a permanent 1.025x bonus to every tap.</p>
+            <div class="progress-track" role="progressbar" aria-label="Progress to next Tier" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="tier-progress"></div></div>
+            <div class="progress-caption"><span id="tier-progress-label">0 / 10 Ranks</span><span id="tier-bonus">x1.000</span></div>
+            <div class="divider"></div>
+            <button class="action" id="tier-reset" disabled>🌲&nbsp; Tier reset</button>
           </section>
         </div>
       </section>
@@ -146,7 +154,7 @@
   <script>
     (() => {
       const STORAGE_KEY = 'the-random-tree-save-v1';
-      const freshSave = () => ({ leaves: 0, points: 0, ranks: 0, upgrades: 0, lifetimeLeaves: 0 });
+      const freshSave = () => ({ leaves: 0, points: 0, ranks: 0, tiers: 0, upgrades: 0, lifetimeLeaves: 0 });
       let state;
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -159,13 +167,15 @@
       const upgradeCost = () => Math.floor(25 * Math.pow(1.8, state.upgrades));
       const requirement = () => 100 * (state.points + 1);
       const rankRequirement = () => 10 * (state.ranks + 1);
+      const tierMultiplier = () => Math.pow(1.025, state.tiers);
       const stageFor = (leaves) => leaves >= 10000 ? ['The Death tree', ' 🪦'] : leaves >= 500 ? ['A mighty old tree', '🌳'] : leaves >= 100 ? ['A thriving tree', '🌲'] : leaves >= 25 ? ['A leafy sapling', '🌿'] : ['A new sapling', '🌱'];
 
       function render() {
         $('leaves').textContent = pretty(state.leaves);
         $('points').textContent = pretty(state.points);
         $('rank').textContent = pretty(state.ranks);
-        $('power').textContent = pretty(1 + state.upgrades + state.points + state.ranks);  
+        $('tiers').textContent = pretty(state.tiers);
+        $('power').textContent = Number(((1 + state.upgrades + state.points + state.ranks) * tierMultiplier()).toFixed(3)).toString();
         $('upgrade-level').textContent = `Level ${state.upgrades} · Cost: ${pretty(upgradeCost())} leaves`;
         $('buy-upgrade').disabled = state.leaves < upgradeCost();
         const need = requirement();
@@ -182,6 +192,12 @@
         $('rank-progress-label').textContent = `${pretty(state.points)} / ${pretty(rankNeed)} Prestige Points`;
         $('next-rank').textContent = `Rank ${state.ranks + 1}`;
         $('rank-reset').disabled = state.points < rankNeed;
+        const tierPercent = Math.min(100, (state.ranks / 10) * 100);
+        $('tier-progress').style.width = `${tierPercent}%`;
+        $('tier-progress').parentElement.setAttribute('aria-valuenow', String(Math.floor(tierPercent)));
+        $('tier-progress-label').textContent = `${pretty(state.ranks)} / 10 Ranks`;
+        $('tier-bonus').textContent = `x${tierMultiplier().toFixed(3)}`;
+        $('tier-reset').disabled = state.ranks < 10;
 
         const [stage, emoji] = stageFor(state.leaves);
         $('tree-stage').textContent = stage;
@@ -191,13 +207,13 @@
       }
 
       $('tap-tree').addEventListener('click', (event) => {
-        const gain = 1 + state.upgrades + state.points + state.ranks;
+        const gain = (1 + state.upgrades + state.points + state.ranks) * tierMultiplier();
         state.leaves += gain;
         state.lifetimeLeaves += gain;
         const bounds = $('grove').getBoundingClientRect();
         const floating = document.createElement('span');
         floating.className = 'float';
-        floating.textContent = `+${gain} 🍃`;
+        floating.textContent = `+${Number(gain.toFixed(3))} 🍃`;
         floating.style.left = `${event.clientX ? event.clientX - bounds.left : bounds.width / 2}px`;
         floating.style.top = `${event.clientY ? event.clientY - bounds.top : bounds.height / 2}px`;
         $('grove').append(floating);
@@ -218,6 +234,7 @@
         state.leaves = 0;
         state.upgrades = 0;
         render();
+      });
       $('rank-reset').addEventListener('click', () => {
         if (state.points < rankRequirement()) return;
         state.ranks += 1;
@@ -226,6 +243,14 @@
         state.upgrades = 0;
         render();
       });
+      $('tier-reset').addEventListener('click', () => {
+        if (state.ranks < 10) return;
+        state.tiers += 1;
+        state.ranks = 0;
+        state.points = 0;
+        state.leaves = 0;
+        state.upgrades = 0;
+        render();
       });
       render();
     })();
