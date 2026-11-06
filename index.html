@@ -127,7 +127,7 @@
           </section>
           <section class="card" aria-labelledby="prestige-title">
             <h2 id="prestige-title">A fresh beginning</h2>
-            <p class="card-copy">Trade your grove's growth for a permanent Prestige Point. Points stay with you when you restart.</p>
+            <p class="card-copy">Trade your grove's growth for a Prestige Point. Points stay with you when you restart.</p>
             <div class="progress-track" role="progressbar" aria-label="Progress to next Prestige Point" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="progress"></div></div>
             <div class="progress-caption"><span id="prestige-progress">0 / 100 leaves</span><span id="next-point">1 point</span></div>
             <div class="divider"></div>
@@ -135,7 +135,7 @@
           </section>
           <section class="card" aria-labelledby="rank-title">
             <h2 id="rank-title">A higher calling</h2>
-            <p class="card-copy" id="rank-copy">Reset your grove and Prestige Points to earn a permanent Rank. After your first Pent, Ranks are earned automatically. Rank power scales with rank^1.002.</p>
+            <p class="card-copy" id="rank-copy">Reset your grove and Prestige Points to earn a Rank. After your first Pent, Ranks are earned automatically. Rank power scales with rank^1.002.</p>
             <div class="progress-track" role="progressbar" aria-label="Progress to next Rank" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="rank-progress"></div></div>
             <div class="progress-caption"><span id="rank-progress-label">0 / 10 Prestige Points</span><span id="next-rank">Rank 1</span></div>
             <div class="divider"></div>
@@ -143,7 +143,7 @@
           </section>
           <section class="card" aria-labelledby="tier-title">
             <h2 id="tier-title">A new tier</h2>
-            <p class="card-copy">Reach Rank 10, then reset your grove, Prestige Points, upgrades, and Ranks for a permanent 1.25x bonus to every tap.</p>
+            <p class="card-copy">Reach Rank 10, then reset your grove, Prestige Points, upgrades, and Ranks for a 1.25x bonus to every tap.</p>
             <div class="progress-track" role="progressbar" aria-label="Progress to next Tier" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="tier-progress"></div></div>
             <div class="progress-caption"><span id="tier-progress-label">0 / 10 Ranks</span><span id="tier-bonus">x1.000</span></div>
             <div class="divider"></div>
@@ -151,7 +151,7 @@
           </section>
           <section class="card" aria-labelledby="ascension-title">
             <h2 id="ascension-title">Ascend beyond the grove</h2>
-            <p class="card-copy">Reach 10 Tiers, then reset your grove, Prestige Points, upgrades, Ranks, and Tiers for a permanent 2.5x bonus to every tap.</p>
+            <p class="card-copy">Reach 10 Tiers, then reset your grove, Prestige Points, upgrades, Ranks, and Tiers for a 10x bonus to every tap.</p>
             <div class="progress-track" role="progressbar" aria-label="Progress to next Ascension" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="ascension-progress"></div></div>
             <div class="progress-caption"><span id="ascension-progress-label">0 / 10 Tiers</span><span id="ascension-bonus">x1.000</span></div>
             <div class="divider"></div>
@@ -159,7 +159,7 @@
           </section>
           <section class="card" aria-labelledby="pent-title">
             <h2 id="pent-title">A greater cycle</h2>
-            <p class="card-copy">Reach 10 Ascensions to Pent. Each Pent resets your lower progress and grants a permanent 10x tap bonus. After your first Pent, Prestige Points are claimed automatically.</p>
+            <p class="card-copy">Reach 10 Ascensions to Pent. Each Pent resets your lower progress and grants a 1,000x tap bonus. After your first Pent, Prestige Points are claimed automatically.</p>
             <div class="progress-track" role="progressbar" aria-label="Progress to next Pent" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="pent-progress"></div></div>
             <div class="progress-caption"><span id="pent-progress-label">0 / 10 Ascensions</span><span id="pent-bonus">x1.000</span></div>
             <div class="divider"></div>
@@ -167,11 +167,17 @@
           </section>
           <section class="card" aria-labelledby="hex-title">
             <h2 id="hex-title">A hexagonal cycle</h2>
-            <p class="card-copy">Reach 10 Pents, then reset all lower progress for a permanent 100x tap bonus per Hex.</p>
+            <p class="card-copy">Reach 10 Pents, then reset all lower progress for a 1,000,000x tap bonus per Hex.</p>
             <div class="progress-track" role="progressbar" aria-label="Progress to next Hex" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="hex-progress"></div></div>
             <div class="progress-caption"><span id="hex-progress-label">0 / 10 Pents</span><span id="hex-bonus">x1.000</span></div>
             <div class="divider"></div>
             <button class="action" id="hex-reset" disabled>⬡&nbsp; Hex reset</button>
+            <h2 id="hex-title">A hexagonal cycle</h2>
+            <p class="card-copy">Reach 10 Hexes, then reset all lower progress for a permanent 1e10x and ^1.250 tap bonus per Hex.</p>
+            <div class="progress-track" role="progressbar" aria-label="Progress to next Hex" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="hex-progress"></div></div>
+            <div class="progress-caption"><span id="hex-progress-label">0 / 10 Pents</span><span id="hex-bonus">x1.000</span></div>
+            <div class="divider"></div>
+            <button class="action" id="hex-reset" disabled> 💗&nbsp; Hept reset</button>
           </section>
         </div>
       </section>
@@ -181,7 +187,7 @@
   <script>
     (() => {
       const STORAGE_KEY = 'the-random-tree-save-v1';
-      const freshSave = () => ({ leaves: 0, points: 0, ranks: 0, tiers: 0, ascensions: 0, pents: 0, hexes: 0, upgrades: 0, lifetimeLeaves: 0 });
+      const freshSave = () => ({ leaves: 0, points: 0, ranks: 0, tiers: 0, ascensions: 0, pents: 0, hexes: 0, heptes: 0, upgrades: 0, lifetimeLeaves: 0 });
       let state;
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -195,10 +201,12 @@
       const requirement = () => 100 * (state.points + 1);
       const rankRequirement = () => 10 * (state.ranks + 1);
       const tierMultiplier = () => Math.pow(1.25, state.tiers);
-      const ascensionMultiplier = () => Math.pow(2.5, state.ascensions);
-      const pentMultiplier = () => Math.pow(10, state.pents);
-      const hexMultiplier = () => Math.pow(100, state.hexes);
-      const rankMultiplier = () => 1 + Math.pow(state.ranks, 1.002);
+      const ascensionMultiplier = () => Math.pow(10, state.ascensions);
+      const pentMultiplier = () => Math.pow(1000, state.pents);
+      const hexMultiplier = () => Math.pow(1000000, state.hexes);
+      const heptMultiplier = () => Math.pow(1000000000, state.hexes);
+      const heptMultiplier = () => 1 + Math.pow(state.ranks, 1.25);
+      const rankMultiplier = () => 1 + Math.pow(state.ranks, 1.0025);
       const tapMultiplier = () => tierMultiplier() * ascensionMultiplier() * pentMultiplier() * hexMultiplier() * rankMultiplier();
       const stageFor = (leaves) => leaves >= 10000 ? ['The Death tree', ' 🪦'] : leaves >= 500 ? ['A mighty old tree', '🌳'] : leaves >= 100 ? ['A thriving tree', '🌲'] : leaves >= 25 ? ['A leafy sapling', '🌿'] : ['A new sapling', '🌱'];
 
@@ -263,6 +271,12 @@
         $('hex-progress-label').textContent = `${pretty(state.pents)} / 10 Pents`;
         $('hex-bonus').textContent = `x${hexMultiplier().toFixed(3)}`;
         $('hex-reset').disabled = state.pents < 10;
+        const heptPercent = Math.min(100, (state.pents / 10) * 100);
+        $('hept-progress').style.width = `${heptPercent}%`;
+        $('hept-progress').parentElement.setAttribute('aria-valuenow', String(Math.floor(heptPercent)));
+        $('hept-progress-label').textContent = `${pretty(state.hexes)} / 10 hexes`;
+        $('hept-bonus').textContent = `x${heptMultiplier().toFixed(3)}`;
+        $('hept-reset').disabled = state.hexes < 10;
 
         const [stage, emoji] = stageFor(state.leaves);
         $('tree-stage').textContent = stage;
@@ -345,6 +359,19 @@
       $('hex-reset').addEventListener('click', () => {
         if (state.pents < 10) return;
         state.hexes += 1;
+        state.pents = 0;
+        state.ascensions = 0;
+        state.tiers = 0;
+        state.ranks = 0;
+        state.points = 0;
+        state.leaves = 0;
+        state.upgrades = 0;
+        render();
+              });
+      $('hex-reset').addEventListener('click', () => {
+        if (state.hexes < 10) return;
+        state.heptes += 1;
+        state.hexes += 0;
         state.pents = 0;
         state.ascensions = 0;
         state.tiers = 0;
