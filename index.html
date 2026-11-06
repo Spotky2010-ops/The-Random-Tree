@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#10150f">
-  <meta name="description" content="Grow a little tree, gather leaves, and earn Prestige Points in The Random Tree.">
+  <meta name="description" content="Grow a little tree, gather leaves, earn Prestige Points, Reset Higher Ranks Rewards in The Random Tree.">
   <title>The Random Tree — Prestige Points</title>
   <style>
     :root {
@@ -37,7 +37,7 @@
     .eyebrow { color: var(--green); text-transform: uppercase; letter-spacing: .22em; font-size: 11px; font-weight: 800; }
     h1 { margin: 10px 0 7px; font-size: clamp(35px, 6vw, 58px); letter-spacing: -.055em; line-height: 1; }
     .intro p { color: var(--muted); margin: 12px 0 0; }
-    .stats { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; max-width: 920px; margin: 0 auto 18px; }
+    .stats { display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; max-width: 920px; margin: 0 auto 18px; }
     .stat, .card { border: 1px solid var(--line); border-radius: 18px; background: linear-gradient(145deg, #1d271d, var(--panel)); }
     .stat { padding: 16px 19px; }
     .stat-label { color: var(--muted); font-size: 12px; }
@@ -107,6 +107,7 @@
         <div class="stat"><span class="stat-label">🌲 Tiers</span><strong class="stat-value" id="tiers">0</strong></div>
         <div class="stat"><span class="stat-label">🌌 Ascensions</span><strong class="stat-value" id="ascensions">0</strong></div>
         <div class="stat"><span class="stat-label">🔷 Pents</span><strong class="stat-value" id="pents">0</strong></div>
+        <div class="stat"><span class="stat-label">⬡ Hexes</span><strong class="stat-value" id="hexes">0</strong></div>
         <div class="stat"><span class="stat-label">🌳 Leaves per click</span><strong class="stat-value" id="power">1</strong></div>
       </section>
       <section class="game" aria-label="Tree game">
@@ -134,7 +135,7 @@
           </section>
           <section class="card" aria-labelledby="rank-title">
             <h2 id="rank-title">A higher calling</h2>
-            <p class="card-copy">Reset your grove and Prestige Points to earn a permanent Rank. Each Rank adds one leaf to every tap.</p>
+            <p class="card-copy" id="rank-copy">Reset your grove and Prestige Points to earn a permanent Rank. After your first Pent, Ranks are earned automatically. Rank power scales with rank^1.002.</p>
             <div class="progress-track" role="progressbar" aria-label="Progress to next Rank" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="rank-progress"></div></div>
             <div class="progress-caption"><span id="rank-progress-label">0 / 10 Prestige Points</span><span id="next-rank">Rank 1</span></div>
             <div class="divider"></div>
@@ -142,7 +143,7 @@
           </section>
           <section class="card" aria-labelledby="tier-title">
             <h2 id="tier-title">A new tier</h2>
-            <p class="card-copy">Reach Rank 10, then reset your grove, Prestige Points, upgrades, and Ranks for a permanent 1.125x bonus to every tap.</p>
+            <p class="card-copy">Reach Rank 10, then reset your grove, Prestige Points, upgrades, and Ranks for a permanent 1.25x bonus to every tap.</p>
             <div class="progress-track" role="progressbar" aria-label="Progress to next Tier" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="tier-progress"></div></div>
             <div class="progress-caption"><span id="tier-progress-label">0 / 10 Ranks</span><span id="tier-bonus">x1.000</span></div>
             <div class="divider"></div>
@@ -164,6 +165,14 @@
             <div class="divider"></div>
             <button class="action" id="pent-reset" disabled>🔷&nbsp; Pent reset</button>
           </section>
+          <section class="card" aria-labelledby="hex-title">
+            <h2 id="hex-title">A hexagonal cycle</h2>
+            <p class="card-copy">Reach 10 Pents, then reset all lower progress for a permanent 100x tap bonus per Hex.</p>
+            <div class="progress-track" role="progressbar" aria-label="Progress to next Hex" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="hex-progress"></div></div>
+            <div class="progress-caption"><span id="hex-progress-label">0 / 10 Pents</span><span id="hex-bonus">x1.000</span></div>
+            <div class="divider"></div>
+            <button class="action" id="hex-reset" disabled>⬡&nbsp; Hex reset</button>
+          </section>
         </div>
       </section>
     </main>
@@ -172,7 +181,7 @@
   <script>
     (() => {
       const STORAGE_KEY = 'the-random-tree-save-v1';
-      const freshSave = () => ({ leaves: 0, points: 0, ranks: 0, tiers: 0, ascensions: 0, pents: 0, upgrades: 0, lifetimeLeaves: 0 });
+      const freshSave = () => ({ leaves: 0, points: 0, ranks: 0, tiers: 0, ascensions: 0, pents: 0, hexes: 0, upgrades: 0, lifetimeLeaves: 0 });
       let state;
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -185,11 +194,24 @@
       const upgradeCost = () => Math.floor(25 * Math.pow(1.8, state.upgrades));
       const requirement = () => 100 * (state.points + 1);
       const rankRequirement = () => 10 * (state.ranks + 1);
-      const tierMultiplier = () => Math.pow(1.125, state.tiers);
+      const tierMultiplier = () => Math.pow(1.25, state.tiers);
       const ascensionMultiplier = () => Math.pow(2.5, state.ascensions);
       const pentMultiplier = () => Math.pow(10, state.pents);
-      const tapMultiplier = () => tierMultiplier() * ascensionMultiplier() * pentMultiplier();
+      const hexMultiplier = () => Math.pow(100, state.hexes);
+      const rankMultiplier = () => 1 + Math.pow(state.ranks, 1.002);
+      const tapMultiplier = () => tierMultiplier() * ascensionMultiplier() * pentMultiplier() * hexMultiplier() * rankMultiplier();
       const stageFor = (leaves) => leaves >= 10000 ? ['The Death tree', ' 🪦'] : leaves >= 500 ? ['A mighty old tree', '🌳'] : leaves >= 100 ? ['A thriving tree', '🌲'] : leaves >= 25 ? ['A leafy sapling', '🌿'] : ['A new sapling', '🌱'];
+
+      function rankUp() {
+        state.ranks += 1;
+        state.leaves = 0;
+        state.points = 0;
+        state.upgrades = 0;
+      }
+
+      function autoRankIfReady() {
+        if (state.pents > 0 && state.points >= rankRequirement()) rankUp();
+      }
 
       function render() {
         $('leaves').textContent = pretty(state.leaves);
@@ -198,7 +220,8 @@
         $('tiers').textContent = pretty(state.tiers);
         $('ascensions').textContent = pretty(state.ascensions);
         $('pents').textContent = pretty(state.pents);
-        $('power').textContent = Number(((1 + state.upgrades + state.points + state.ranks) * tapMultiplier()).toFixed(3)).toString();
+        $('hexes').textContent = pretty(state.hexes);
+        $('power').textContent = Number(((1 + state.upgrades + state.points) * tapMultiplier()).toFixed(3)).toString();
         $('upgrade-level').textContent = `Level ${state.upgrades} · Cost: ${pretty(upgradeCost())} leaves`;
         $('buy-upgrade').disabled = state.leaves < upgradeCost();
         const need = requirement();
@@ -214,7 +237,8 @@
         $('rank-progress').parentElement.setAttribute('aria-valuenow', String(Math.floor(rankPercent)));
         $('rank-progress-label').textContent = `${pretty(state.points)} / ${pretty(rankNeed)} Prestige Points`;
         $('next-rank').textContent = `Rank ${state.ranks + 1}`;
-        $('rank-reset').disabled = state.points < rankNeed;
+        $('rank-reset').disabled = state.pents > 0 || state.points < rankNeed;
+        $('rank-reset').textContent = state.pents > 0 ? '🌟 Auto-rank active' : '🌟 Rank up';
         const tierPercent = Math.min(100, (state.ranks / 10) * 100);
         $('tier-progress').style.width = `${tierPercent}%`;
         $('tier-progress').parentElement.setAttribute('aria-valuenow', String(Math.floor(tierPercent)));
@@ -233,6 +257,12 @@
         $('pent-progress-label').textContent = `${pretty(state.ascensions)} / 10 Ascensions`;
         $('pent-bonus').textContent = `x${pentMultiplier().toFixed(3)}`;
         $('pent-reset').disabled = state.ascensions < 10;
+        const hexPercent = Math.min(100, (state.pents / 10) * 100);
+        $('hex-progress').style.width = `${hexPercent}%`;
+        $('hex-progress').parentElement.setAttribute('aria-valuenow', String(Math.floor(hexPercent)));
+        $('hex-progress-label').textContent = `${pretty(state.pents)} / 10 Pents`;
+        $('hex-bonus').textContent = `x${hexMultiplier().toFixed(3)}`;
+        $('hex-reset').disabled = state.pents < 10;
 
         const [stage, emoji] = stageFor(state.leaves);
         $('tree-stage').textContent = stage;
@@ -242,7 +272,7 @@
       }
 
       $('tap-tree').addEventListener('click', (event) => {
-        const gain = (1 + state.upgrades + state.points + state.ranks) * tapMultiplier();
+        const gain = (1 + state.upgrades + state.points) * tapMultiplier();
         state.leaves += gain;
         state.lifetimeLeaves += gain;
         const bounds = $('grove').getBoundingClientRect();
@@ -258,6 +288,7 @@
           state.leaves = 0;
           state.upgrades = 0;
         }
+        autoRankIfReady();
         render();
       });
       $('buy-upgrade').addEventListener('click', () => {
@@ -273,14 +304,12 @@
         state.points += earned;
         state.leaves = 0;
         state.upgrades = 0;
+        autoRankIfReady();
         render();
       });
       $('rank-reset').addEventListener('click', () => {
-        if (state.points < rankRequirement()) return;
-        state.ranks += 1;
-        state.leaves = 0;
-        state.points = 0;
-        state.upgrades = 0;
+        if (state.pents > 0 || state.points < rankRequirement()) return;
+        rankUp();
         render();
       });
       $('tier-reset').addEventListener('click', () => {
@@ -313,6 +342,19 @@
         state.upgrades = 0;
         render();
       });
+      $('hex-reset').addEventListener('click', () => {
+        if (state.pents < 10) return;
+        state.hexes += 1;
+        state.pents = 0;
+        state.ascensions = 0;
+        state.tiers = 0;
+        state.ranks = 0;
+        state.points = 0;
+        state.leaves = 0;
+        state.upgrades = 0;
+        render();
+      });
+      autoRankIfReady();
       render();
     })();
   </script>
