@@ -172,12 +172,6 @@
             <div class="progress-caption"><span id="hex-progress-label">0 / 10 Pents</span><span id="hex-bonus">x1.000</span></div>
             <div class="divider"></div>
             <button class="action" id="hex-reset" disabled>⬡&nbsp; Hex reset</button>
-            <h2 id="hex-title">A hexagonal cycle</h2>
-            <p class="card-copy">Reach 10 Hexes, then reset all lower progress for a permanent 1e10x and ^1.250 tap bonus per Hex.</p>
-            <div class="progress-track" role="progressbar" aria-label="Progress to next Hex" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div class="progress" id="hex-progress"></div></div>
-            <div class="progress-caption"><span id="hex-progress-label">0 / 10 Pents</span><span id="hex-bonus">x1.000</span></div>
-            <div class="divider"></div>
-            <button class="action" id="hex-reset" disabled> 💗&nbsp; Hept reset</button>
           </section>
         </div>
       </section>
@@ -187,7 +181,7 @@
   <script>
     (() => {
       const STORAGE_KEY = 'the-random-tree-save-v1';
-      const freshSave = () => ({ leaves: 0, points: 0, ranks: 0, tiers: 0, ascensions: 0, pents: 0, hexes: 0, heptes: 0, upgrades: 0, lifetimeLeaves: 0 });
+      const freshSave = () => ({ leaves: 0, points: 0, ranks: 0, tiers: 0, ascensions: 0, pents: 0, hexes: 0, upgrades: 0, lifetimeLeaves: 0 });
       let state;
       try {
         const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
@@ -197,16 +191,14 @@
 
       const $ = (id) => document.getElementById(id);
       const pretty = (number) => Math.floor(number).toLocaleString();
-      const upgradeCost = () => Math.floor(25 * Math.pow(1.8, state.upgrades));
+      const upgradeCost = () => Math.floor(25 * Math.pow(1.75, state.upgrades));
       const requirement = () => 100 * (state.points + 1);
       const rankRequirement = () => 10 * (state.ranks + 1);
-      const tierMultiplier = () => Math.pow(1.25, state.tiers);
+      const tierMultiplier = () => Math.pow(1.275, state.tiers);
       const ascensionMultiplier = () => Math.pow(10, state.ascensions);
       const pentMultiplier = () => Math.pow(1000, state.pents);
       const hexMultiplier = () => Math.pow(1000000, state.hexes);
-      const heptMultiplier = () => Math.pow(1000000000, state.hexes);
-      const heptMultiplier = () => 1 + Math.pow(state.ranks, 1.25);
-      const rankMultiplier = () => 1 + Math.pow(state.ranks, 1.0025);
+      const rankMultiplier = () => 1 + Math.pow(state.ranks, 1.00275);
       const tapMultiplier = () => tierMultiplier() * ascensionMultiplier() * pentMultiplier() * hexMultiplier() * rankMultiplier();
       const stageFor = (leaves) => leaves >= 10000 ? ['The Death tree', ' 🪦'] : leaves >= 500 ? ['A mighty old tree', '🌳'] : leaves >= 100 ? ['A thriving tree', '🌲'] : leaves >= 25 ? ['A leafy sapling', '🌿'] : ['A new sapling', '🌱'];
 
@@ -271,12 +263,6 @@
         $('hex-progress-label').textContent = `${pretty(state.pents)} / 10 Pents`;
         $('hex-bonus').textContent = `x${hexMultiplier().toFixed(3)}`;
         $('hex-reset').disabled = state.pents < 10;
-        const heptPercent = Math.min(100, (state.pents / 10) * 100);
-        $('hept-progress').style.width = `${heptPercent}%`;
-        $('hept-progress').parentElement.setAttribute('aria-valuenow', String(Math.floor(heptPercent)));
-        $('hept-progress-label').textContent = `${pretty(state.hexes)} / 10 hexes`;
-        $('hept-bonus').textContent = `x${heptMultiplier().toFixed(3)}`;
-        $('hept-reset').disabled = state.hexes < 10;
 
         const [stage, emoji] = stageFor(state.leaves);
         $('tree-stage').textContent = stage;
@@ -359,19 +345,6 @@
       $('hex-reset').addEventListener('click', () => {
         if (state.pents < 10) return;
         state.hexes += 1;
-        state.pents = 0;
-        state.ascensions = 0;
-        state.tiers = 0;
-        state.ranks = 0;
-        state.points = 0;
-        state.leaves = 0;
-        state.upgrades = 0;
-        render();
-              });
-      $('hex-reset').addEventListener('click', () => {
-        if (state.hexes < 10) return;
-        state.heptes += 1;
-        state.hexes += 0;
         state.pents = 0;
         state.ascensions = 0;
         state.tiers = 0;
